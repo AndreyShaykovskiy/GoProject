@@ -28,9 +28,21 @@ func PostHandler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
+		// Возвращаем созданное сообщение
+		response, err := json.Marshal(task)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusCreated) // Устанавливаем статус 201 Created
+		w.Write(response)                 // Отправляем ответ клиенту
+
 	} else {
 		http.Error(w, "Недопустимый метод запроса", http.StatusBadRequest)
 	}
+
 }
 
 func main() {
