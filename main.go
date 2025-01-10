@@ -33,6 +33,7 @@ func GetHandler(w http.ResponseWriter, r *http.Request) {
 
 func PostHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method == http.MethodPost {
+		var message Message
 		decoder := json.NewDecoder(r.Body)
 		defer r.Body.Close() // Закрываем тело запроса после декодирования
 

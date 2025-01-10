@@ -8,5 +8,3 @@ type Message struct {
 	Task       string `json:"task"`    // Наш сервер будет ожидать json c полем text
 	IsDone     bool   `json:"is_done"` // В GO используем CamelCase, в Json - snake
 }
-
-var message Message
