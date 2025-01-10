@@ -2,20 +2,33 @@ package main
 
 import (
 	"encoding/json"
-	"fmt"
 	"github.com/gorilla/mux"
+	"log"
 	"net/http"
 )
 
-type Task struct {
-	Task string `json:"task"`
-}
+func GetHandler(w http.ResponseWriter, r *http.Request) {
+	// Создаем срез для хранения всех строк таблицы Message
+	var messages []Message
 
-var task Task
+	if err := DB.Find(&messages).Error; err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError) // Возвращаем ошибку, если запрос не удался
+		return
+	}
 
-func HelloHandler(w http.ResponseWriter, r *http.Request) {
-	response := fmt.Sprintf("hello, %s", task.Task)
-	fmt.Fprintln(w, response) // Отправляем ответ клиенту
+	// Устанавливаем заголовок Content-Type
+	w.Header().Set("Content-Type", "application/json")
+
+	// Преобразуем срез сообщений в JSON
+	response, err := json.Marshal(messages)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError) // Возвращаем ошибку, если преобразование не удалось
+		return
+	}
+
+	// Отправляем JSON-ответ клиенту
+	w.WriteHeader(http.StatusOK) // Устанавливаем статус 200 OK
+	w.Write(response)            // Отправляем ответ клиенту
 }
 
 func PostHandler(w http.ResponseWriter, r *http.Request) {
@@ -23,13 +36,13 @@ func PostHandler(w http.ResponseWriter, r *http.Request) {
 		decoder := json.NewDecoder(r.Body)
 		defer r.Body.Close() // Закрываем тело запроса после декодирования
 
-		if err := decoder.Decode(&task); err != nil {
+		if err := decoder.Decode(&message); err != nil {
 			http.Error(w, err.Error(), http.StatusBadRequest) // Возвращаем ошибку, если декодирование не удалось
 			return
 		}
 
 		// Возвращаем созданное сообщение
-		response, err := json.Marshal(task)
+		response, err := json.Marshal(message)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
@@ -39,6 +52,12 @@ func PostHandler(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusCreated) // Устанавливаем статус 201 Created
 		w.Write(response)                 // Отправляем ответ клиенту
 
+		// создаем новую запись в базе данных
+		result := DB.Create(&Message{Task: message.Task, IsDone: message.IsDone})
+		if result.Error != nil {
+			log.Fatal("Ошибка: ", result.Error) // обработка ошибки создания
+		}
+
 	} else {
 		http.Error(w, "Недопустимый метод запроса", http.StatusBadRequest)
 	}
@@ -46,9 +65,19 @@ func PostHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
+	// Вызываем метод InitDB() из файла db.go
+	InitDB()
+
+	// Автоматическая миграция модели Message
+	DB.AutoMigrate(&Message{})
+
+	// Создаем маршрутизатор
 	router := mux.NewRouter()
-	// наше приложение будет слушать запросы на localhost:8080/api/hello
-	router.HandleFunc("/api/hello", HelloHandler).Methods("GET")
-	router.HandleFunc("/api/task", PostHandler).Methods("POST")
+
+	// Определяем маршруты для нашего API
+	router.HandleFunc("/api/get", GetHandler).Methods("GET")
+	router.HandleFunc("/api/post", PostHandler).Methods("POST")
+
+	//Запуск сервера
 	http.ListenAndServe(":8080", router)
 }
