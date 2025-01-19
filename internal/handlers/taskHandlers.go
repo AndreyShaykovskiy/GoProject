@@ -6,11 +6,19 @@ import (
 	"context"
 )
 
-type Handler struct {
+type TaskHandler struct {
 	Service *tasksService.TaskService
 }
 
-func (h *Handler) PatchTasksId(ctx context.Context, request tasks.PatchTasksIdRequestObject) (tasks.PatchTasksIdResponseObject, error) {
+// Нужна для создания структуры TaskHandler на этапе инициализации приложения
+
+func NewTaskHandler(service *tasksService.TaskService) *TaskHandler {
+	return &TaskHandler{
+		Service: service,
+	}
+}
+
+func (h *TaskHandler) PatchTasksId(ctx context.Context, request tasks.PatchTasksIdRequestObject) (tasks.PatchTasksIdResponseObject, error) {
 	// Извлекаем ID задачи из запроса
 	taskID := request.Id
 
@@ -45,7 +53,7 @@ func (h *Handler) PatchTasksId(ctx context.Context, request tasks.PatchTasksIdRe
 	return response, nil
 }
 
-func (h *Handler) DeleteTasksId(ctx context.Context, request tasks.DeleteTasksIdRequestObject) (tasks.DeleteTasksIdResponseObject, error) {
+func (h *TaskHandler) DeleteTasksId(ctx context.Context, request tasks.DeleteTasksIdRequestObject) (tasks.DeleteTasksIdResponseObject, error) {
 	// Извлекаем ID задачи из запроса
 	taskID := request.Id
 
@@ -62,7 +70,7 @@ func (h *Handler) DeleteTasksId(ctx context.Context, request tasks.DeleteTasksId
 
 }
 
-func (h *Handler) GetTasks(_ context.Context, _ tasks.GetTasksRequestObject) (tasks.GetTasksResponseObject, error) {
+func (h *TaskHandler) GetTasks(_ context.Context, _ tasks.GetTasksRequestObject) (tasks.GetTasksResponseObject, error) {
 	// Получение всех задач из сервиса
 	allTasks, err := h.Service.GetAllTasks()
 	if err != nil {
@@ -87,7 +95,7 @@ func (h *Handler) GetTasks(_ context.Context, _ tasks.GetTasksRequestObject) (ta
 	return response, nil
 }
 
-func (h *Handler) PostTasks(_ context.Context, request tasks.PostTasksRequestObject) (tasks.PostTasksResponseObject, error) {
+func (h *TaskHandler) PostTasks(_ context.Context, request tasks.PostTasksRequestObject) (tasks.PostTasksResponseObject, error) {
 	// Распаковываем тело запроса напрямую, без декодера!
 	taskRequest := request.Body
 	// Обращаемся к сервису и создаем задачу
@@ -108,12 +116,4 @@ func (h *Handler) PostTasks(_ context.Context, request tasks.PostTasksRequestObj
 	}
 	// Просто возвращаем респонс!
 	return response, nil
-}
-
-// Нужна для создания структуры Handler на этапе инициализации приложения
-
-func NewHandler(service *tasksService.TaskService) *Handler {
-	return &Handler{
-		Service: service,
-	}
 }
