@@ -19,6 +19,7 @@ type Task struct {
 	Id     *uint   `json:"id,omitempty"`
 	IsDone *bool   `json:"is_done,omitempty"`
 	Task   *string `json:"task,omitempty"`
+	UserId *uint   `json:"user_id,omitempty"`
 }
 
 // PatchTasksIdJSONBody defines parameters for PatchTasksId.

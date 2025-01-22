@@ -13,6 +13,29 @@ type UserHandler struct {
 	Validator *validator.Validate
 }
 
+func (h *UserHandler) GetTasksByUserID(ctx context.Context, request users.GetTasksByUserIDRequestObject) (users.GetTasksByUserIDResponseObject, error) {
+	userID := request.UserId // Извлекаем ID пользователя из запроса
+
+	// Получаем задачи для пользователя
+	tasks, err := h.Service.GetTasksForUser(userID)
+	if err != nil {
+		return nil, err // Обработка ошибки
+	}
+
+	// Создаем ответ
+	response := users.GetTasksByUserID200JSONResponse{}
+	for _, task := range tasks {
+		response = append(response, users.Task{
+			Id:     &task.ID,
+			Task:   &task.Task,
+			IsDone: &task.IsDone,
+			UserId: &task.UserID,
+		})
+	}
+
+	return response, nil
+}
+
 // Нужна для создания структуры UserHandler на этапе инициализации приложения
 
 func NewUserHandler(service *userService.UserService, validator *validator.Validate) *UserHandler {

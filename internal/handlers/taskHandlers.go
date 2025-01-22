@@ -47,6 +47,7 @@ func (h *TaskHandler) PatchTasksId(ctx context.Context, request tasks.PatchTasks
 		Id:     &updatedTask.ID,
 		Task:   &updatedTask.Task,
 		IsDone: &updatedTask.IsDone,
+		UserId: &updatedTask.UserID,
 	}
 
 	// Возвращаем ответ
@@ -87,6 +88,7 @@ func (h *TaskHandler) GetTasks(_ context.Context, _ tasks.GetTasksRequestObject)
 			Id:     &tsk.ID,
 			Task:   &tsk.Task,
 			IsDone: &tsk.IsDone,
+			UserId: &tsk.UserID, // Добавляем UserID в ответ
 		}
 		response = append(response, task)
 	}
@@ -98,21 +100,31 @@ func (h *TaskHandler) GetTasks(_ context.Context, _ tasks.GetTasksRequestObject)
 func (h *TaskHandler) PostTasks(_ context.Context, request tasks.PostTasksRequestObject) (tasks.PostTasksResponseObject, error) {
 	// Распаковываем тело запроса напрямую, без декодера!
 	taskRequest := request.Body
+
+	// Проверяем наличие UserId
+	var userId *uint
+	if taskRequest.UserId != nil {
+		userId = taskRequest.UserId
+	}
+
 	// Обращаемся к сервису и создаем задачу
 	taskToCreate := tasksService.Task{
 		Task:   *taskRequest.Task,
 		IsDone: *taskRequest.IsDone,
+		UserID: *userId, // Присваиваем указатель
 	}
-	createdTask, err := h.Service.CreateTask(taskToCreate)
 
+	createdTask, err := h.Service.CreateTask(taskToCreate)
 	if err != nil {
 		return nil, err
 	}
+
 	// создаем структуру респонс
 	response := tasks.PostTasks201JSONResponse{
 		Id:     &createdTask.ID,
 		Task:   &createdTask.Task,
 		IsDone: &createdTask.IsDone,
+		UserId: &createdTask.UserID,
 	}
 	// Просто возвращаем респонс!
 	return response, nil

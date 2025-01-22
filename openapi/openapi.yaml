@@ -156,7 +156,29 @@ paths:
       responses:
         '204':
           description: User successfully deleted
-
+  /user/{userId}/tasks:
+    get:
+      summary: Get all tasks by user ID
+      operationId: GetTasksByUserID
+      tags:
+        - users
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          description: The ID of the user to get tasks for
+          schema:
+            type: integer
+            format: uint
+      responses:
+        '200':
+          description: A list of tasks for the specified user
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Task'
 
 
 components:
@@ -171,6 +193,9 @@ components:
           type: string
         is_done:
           type: boolean
+        user_id:
+          type: integer
+          format: uint
     User:
       type: object
       properties:
