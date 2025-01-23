@@ -14,14 +14,6 @@ import (
 	strictecho "github.com/oapi-codegen/runtime/strictmiddleware/echo"
 )
 
-// Task defines model for Task.
-type Task struct {
-	Id     *uint   `json:"id,omitempty"`
-	IsDone *bool   `json:"is_done,omitempty"`
-	Task   *string `json:"task,omitempty"`
-	UserId *uint   `json:"user_id,omitempty"`
-}
-
 // User defines model for User.
 type User struct {
 	Email    *string `json:"email,omitempty"`
@@ -236,7 +228,11 @@ type GetTasksByUserIDResponseObject interface {
 	VisitGetTasksByUserIDResponse(w http.ResponseWriter) error
 }
 
-type GetTasksByUserID200JSONResponse []Task
+type GetTasksByUserID200JSONResponse []struct {
+	Id     uint   `json:"id"`
+	IsDone bool   `json:"is_done"`
+	Task   string `json:"task"`
+}
 
 func (response GetTasksByUserID200JSONResponse) VisitGetTasksByUserIDResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")

@@ -25,11 +25,14 @@ func (h *UserHandler) GetTasksByUserID(ctx context.Context, request users.GetTas
 	// Создаем ответ
 	response := users.GetTasksByUserID200JSONResponse{}
 	for _, task := range tasks {
-		response = append(response, users.Task{
-			Id:     &task.ID,
-			Task:   &task.Task,
-			IsDone: &task.IsDone,
-			UserId: &task.UserID,
+		response = append(response, struct {
+			Id     uint   `json:"id"`
+			IsDone bool   `json:"is_done"`
+			Task   string `json:"task"`
+		}{
+			Id:     task.ID,
+			IsDone: task.IsDone,
+			Task:   task.Task,
 		})
 	}
 
@@ -74,7 +77,7 @@ func (h *UserHandler) PatchUserId(ctx context.Context, request users.PatchUserId
 	}
 
 	// Обновляем пользователя в сервисе
-	updatedUser, err := h.Service.UpdateUserBuID(userID, updatedUser)
+	updatedUser, err := h.Service.UpdateUserByID(userID, updatedUser)
 	if err != nil {
 		return nil, err
 	}

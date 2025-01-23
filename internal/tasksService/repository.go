@@ -1,6 +1,7 @@
 package tasksService
 
 import (
+	"fmt"
 	"gorm.io/gorm"
 )
 
@@ -44,7 +45,19 @@ func (r *taskRepository) UpdateTaskByID(id uint, task Task) (Task, error) {
 	if result.Error != nil {
 		return Task{}, result.Error
 	}
-	return task, nil
+
+	// Проверяем, было ли обновлено хотя бы одно поле
+	if result.RowsAffected == 0 {
+		return Task{}, fmt.Errorf("задача с ID %d не найдена", id)
+	}
+
+	// Получаем обновленную задачу из базы данных
+	var updatedTask Task
+	if err := r.db.First(&updatedTask, id).Error; err != nil {
+		return Task{}, err // Если не удалось найти обновленную задачу
+	}
+
+	return updatedTask, nil // Возвращаем обновленную задачу
 }
 
 func (r *taskRepository) DeleteTaskByID(id uint) error {

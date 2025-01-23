@@ -178,7 +178,19 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/Task'
+                  type: object
+                  properties:
+                    id:
+                      type: integer
+                      format: uint
+                    is_done:
+                      type: boolean
+                    task:
+                      type: string
+                  required:
+                    - id
+                    - is_done
+                    - task
 
 
 components:

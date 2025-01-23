@@ -2,6 +2,7 @@ package userService
 
 import (
 	"FirstTask/internal/tasksService"
+	"fmt"
 	"gorm.io/gorm"
 )
 
@@ -56,7 +57,19 @@ func (r *userRepository) UpdateUserByID(id uint, user User) (User, error) {
 	if result.Error != nil {
 		return User{}, result.Error
 	}
-	return user, nil
+
+	// Проверяем, было ли обновлено хотя бы одно поле
+	if result.RowsAffected == 0 {
+		return User{}, fmt.Errorf("пользователь с ID %d не найден", id)
+	}
+
+	// Получаем обновленного пользователя из базы данных
+	var updatedUser User
+	if err := r.db.First(&updatedUser, id).Error; err != nil {
+		return User{}, err // Если не удалось найти обновленного пользователя
+	}
+
+	return updatedUser, nil // Возвращаем обновленного пользователя
 }
 
 func (r *userRepository) DeleteUserByID(id uint) error {

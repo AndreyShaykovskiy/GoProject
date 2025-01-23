@@ -18,7 +18,7 @@ func (s *UserService) GetAllUsers() ([]User, error) {
 	return s.repo.GetAllUsers()
 }
 
-func (s *UserService) UpdateUserBuID(id uint, user User) (User, error) {
+func (s *UserService) UpdateUserByID(id uint, user User) (User, error) {
 	return s.repo.UpdateUserByID(id, user)
 }
 
